@@ -6,7 +6,7 @@ rss_url =  "http://www.metmuseum.org/collection/artwork-of-the-day?rss=1"
 target_dir = ENV['HOME']+"/metIotd"
 
 def cmd shell_command
-    `#{shell_command}`
+    `set -x; #{shell_command}`
     if $?.nil? or not $?.success?
         raise Exception.new "command '#{shell_command}' failed :("
     end
@@ -25,7 +25,7 @@ def clean_up_target output_path
 end
 
 def download_image_to url, output_path
-    cmd "wget --output-document=\"#{output_path}\" #{url}"
+    cmd "wget --output-document='#{output_path}' #{url}"
 end
 
 def get_url_and_output_path rss_url, target_dir
@@ -34,11 +34,12 @@ def get_url_and_output_path rss_url, target_dir
 
     title = rss.channel.item.title.strip
     description = rss.channel.item.description.strip
-    artist = description[/.*Artist:\s*([^\(]*).*/,1].strip
+    artist = description[/.*Artist:\s*([^\(]*).*/,1]
+    artist = " (#{artist.strip})" unless artist.nil?
     image_overview_page = description[/<a\s*href="([^"]*)"/,1].strip
     image_url = find_image_url image_overview_page
 
-    output_path = "#{target_dir}/#{title} (#{artist}).jpg"
+    output_path = "#{target_dir}/#{title}#{artist}.jpg"
 
     return image_url, output_path
 end
