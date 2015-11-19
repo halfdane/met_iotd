@@ -8,13 +8,17 @@ target_dir = ENV['HOME']+"/metIotd"
 def cmd shell_command
     `set -x; #{shell_command}`
     if $?.nil? or not $?.success?
-        raise Exception.new "command '#{shell_command}' failed :("
+        raise Exception.new "command '#{shell_command}' failed"
     end
 end
 
-def find_image_url image_overview_page_url
-    image_overview_page = open(image_overview_page_url){|f|f.read}
+def find_large_image_url image_overview_page
     link_to_image = image_overview_page[/.*class="download"\s*href="([^"]*)".*/,1]
+    return link_to_image
+end
+
+def find_small_image_url image_overview_page
+    link_to_image = image_overview_page[/.*rel="image_src"\s*href="([^"]*)".*/,1]
     return link_to_image
 end
 
@@ -25,7 +29,7 @@ def clean_up_target output_path
 end
 
 def download_image_to url, output_path
-    cmd "wget --output-document='#{output_path}' #{url}"
+    cmd "wget --output-document=\"#{output_path}\" #{url}"
 end
 
 def get_url_and_output_path rss_url, target_dir
@@ -36,8 +40,14 @@ def get_url_and_output_path rss_url, target_dir
     description = rss.channel.item.description.strip
     artist = description[/.*Artist:\s*([^\(]*).*/,1]
     artist = " (#{artist.strip})" unless artist.nil?
-    image_overview_page = description[/<a\s*href="([^"]*)"/,1].strip
-    image_url = find_image_url image_overview_page
+    image_overview_page_url = description[/<a\s*href="([^"]*)"/,1].strip
+    image_overview_page = open(image_overview_page_url){|f|f.read}
+    image_url = find_large_image_url image_overview_page
+
+    if (! image_url)
+        image_url = find_small_image_url image_overview_page
+        puts "No large image available, using #{image_url}"
+    end
 
     output_path = "#{target_dir}/#{title}#{artist}.jpg"
 
