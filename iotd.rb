@@ -29,7 +29,7 @@ def clean_up_target output_path
 end
 
 def download_image_to url, output_path
-    cmd "wget --output-document=\"#{output_path}\" #{url}"
+    cmd "wget --output-document=\'#{output_path}\' #{url}"
 end
 
 def get_url_and_output_path rss_url, target_dir
