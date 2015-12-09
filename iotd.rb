@@ -29,7 +29,7 @@ def clean_up_target output_path
 end
 
 def download_image_to url, output_path
-    cmd "wget --output-document="+output_path+" #{url}"
+    cmd "wget --output-document=#{output_path} #{url}"
 end
 
 def get_url_and_output_path rss_url, target_dir
@@ -37,12 +37,9 @@ def get_url_and_output_path rss_url, target_dir
     rss = RSS::Parser.parse(rss_content, false)
 
     title = rss.channel.item.title.strip
-    title = title.gsub(/([', ])/, "\\\\\\1")
-    
     description = rss.channel.item.description.strip
     artist = description[/.*Artist:\s*([^\(]*).*/,1]
     artist = " (#{artist.strip})" unless artist.nil?
-    artist = artist.gsub(/([', ])/, "\\\\\\1") unless artist.nil?
     image_overview_page_url = description[/<a\s*href="([^"]*)"/,1].strip
     image_overview_page = open(image_overview_page_url){|f|f.read}
     image_url = find_large_image_url image_overview_page
@@ -51,11 +48,11 @@ def get_url_and_output_path rss_url, target_dir
         image_url = find_small_image_url image_overview_page
         puts "No large image available, using #{image_url}"
     end
-
-    output_path = "#{target_dir}/#{title}#{artist}.jpg"
     
+    image_url = image_url.gsub(/([', ,(,)])/, "\\\\\\1")
+    filename = "#{title}#{artist}".gsub(/([', ,(,)])/, "\\\\\\1")
+    output_path = "#{target_dir}/#{filename}.jpg"
     
-
     return image_url, output_path
 end
 
