@@ -49,8 +49,8 @@ def get_url_and_output_path rss_url, target_dir
         puts "No large image available, using #{image_url}"
     end
     
-    image_url = image_url.gsub(/([', ,(,)])/, "\\\\\\1")
-    filename = "#{title}#{artist}".gsub(/([', ,(,)])/, "\\\\\\1")
+    image_url = image_url.gsub(/([', ,(,),\,,\r,\n])/, "\\\\\\1")
+    filename = "#{title}#{artist}".gsub(/([', ,(,),\,,\r,\n])/, "\\\\\\1")
     output_path = "#{target_dir}/#{filename}.jpg"
     
     return image_url, output_path
